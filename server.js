@@ -33,11 +33,11 @@ let globalConfig = {
 
 const PRECONFIGURED_BOTS = [
     {
-        nome: "GatoDoMato_",
+        nome: "MineroPesca",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
-        senha: "250719802023",
+        senha: "10563210",
         autoSequence: true,
         commands: [
             "/login {senha}",
@@ -46,11 +46,11 @@ const PRECONFIGURED_BOTS = [
         ]
     },
     {
-        nome: "npx_DevCraft",
+        nome: "PescaMinero",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
-        senha: "250719802023",
+        senha: "10563210",
         autoSequence: true,
         commands: [
             "/login {senha}",
@@ -59,11 +59,11 @@ const PRECONFIGURED_BOTS = [
         ]
     },
     {
-        nome: "npm_install",
+        nome: "PandaPesca",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
-        senha: "250719802023",
+        senha: "12081408",
         autoSequence: true,
         commands: [
             "/login {senha}",
