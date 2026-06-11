@@ -46,11 +46,11 @@ const PRECONFIGURED_BOTS = [
         ]
     },
     {
-        nome: "CocaCola",
+        nome: "PandaPesca",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
-        senha: "10563210",
+        senha: "12081408",
         autoSequence: true,
         commands: [
             "/login {senha}",
@@ -59,11 +59,11 @@ const PRECONFIGURED_BOTS = [
         ]
     },
     {
-        nome: "PandaPesca",
+        nome: "CocaCola",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
-        senha: "12081408",
+        senha: "10563210",
         autoSequence: true,
         commands: [
             "/login {senha}",
@@ -139,7 +139,7 @@ class CommandScheduler {
             console.log(`[${this.botData.nome}] ⚠️ Nenhum comando`);
             return;
         }
-        
+
         this.isRunning = true;
         
         // Aguarda o resource pack ser aceito primeiro
