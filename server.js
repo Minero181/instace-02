@@ -52,7 +52,7 @@ const PRECONFIGURED_BOTS = [
         senha: "10563210",
         autoSequence: true,
         commands: [
-            "/login {senha}",
+            "/login 10563210",
             "/skyblock",
             "/ac"
         ]
