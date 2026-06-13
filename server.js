@@ -23,7 +23,6 @@ let bots = [];
 let nextBotId = 1;
 
 let globalConfig = {
-    maxReconnectAttempts: 15,
     webServerPort: process.env.PORT || 3000
 };
 
@@ -46,7 +45,7 @@ const PRECONFIGURED_BOTS = [
         ]
     },
     {
-        nome: "GrampeadorAzul",
+        nome: "TutuDeFeijaum",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
@@ -59,7 +58,7 @@ const PRECONFIGURED_BOTS = [
         ]
     },
     {
-        nome: "TutuDeFeijaum",
+        nome: "GrampeadorAzuç",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
@@ -106,6 +105,17 @@ function initializePreconfiguredBots() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// BACKOFF EXPONENCIAL
+// ═══════════════════════════════════════════════════════════════
+
+function getReconnectDelay(attempts) {
+    // 30s → 60s → 120s → 300s (máximo 5 minutos)
+    const base = 30000;
+    const delay = base * Math.pow(2, Math.min(attempts, 3));
+    return Math.min(delay, 300000);
+}
+
+// ═══════════════════════════════════════════════════════════════
 // SISTEMA DE COMANDOS
 // ═══════════════════════════════════════════════════════════════
 
@@ -139,10 +149,9 @@ class CommandScheduler {
             console.log(`[${this.botData.nome}] ⚠️ Nenhum comando`);
             return;
         }
-        
+
         this.isRunning = true;
         
-        // Aguarda o resource pack ser aceito primeiro
         console.log(`[${this.botData.nome}] ⏳ Aguardando resource pack...`);
         
         let waitTime = 0;
@@ -153,20 +162,18 @@ class CommandScheduler {
         
         if (this.botData.resourcePackReady) {
             console.log(`[${this.botData.nome}] ✅ Resource pack pronto!`);
-            await this.delay(3000); // Espera mais 3 segundos para garantir
+            await this.delay(3000);
         } else {
             console.log(`[${this.botData.nome}] ⚠️ Sem resource pack, continuando...`);
         }
         
         console.log(`[${this.botData.nome}] 🚀 Executando comandos...`);
         
-        // Executa os comandos em sequência
         for (let i = 0; i < this.botData.commands.length; i++) {
             if (!this.isRunning || this.botData.status !== 'online') break;
             
             const cmd = this.botData.commands[i];
             if (cmd && cmd.trim()) {
-                // Se for o comando /ac, dá um delay antes de executar
                 if (cmd === "/ac" || cmd.includes("/ac")) {
                     console.log(`[${this.botData.nome}] ⏳ Aguardando 2s antes do /ac...`);
                     await this.delay(2000);
@@ -174,7 +181,6 @@ class CommandScheduler {
                 
                 await this.executeCommand(cmd);
                 
-                // Delay entre comandos
                 if (i === 0) {
                     console.log(`[${this.botData.nome}] ⏳ Aguardando 5s...`);
                     await this.delay(5000);
@@ -226,9 +232,32 @@ function destroyBot(botId) {
     botData.status = 'offline';
     botData.connecting = false;
     botData.resourcePackReady = false;
+    // Não toca em bot.running — quem controla isso é start/stop da API
     
     bots[index] = botData;
     io.emit('botStatus', { id: botId, status: 'offline', nome: botData.nome });
+}
+
+function scheduleReconnect(botId) {
+    const index = getBotIndex(botId);
+    if (index === -1) return;
+
+    const botData = bots[index];
+
+    if (!botData.running) return;
+
+    botData.reconnectAttempts = (botData.reconnectAttempts || 0) + 1;
+    const delay = getReconnectDelay(botData.reconnectAttempts);
+
+    console.log(`[${botData.nome}] 🔄 Tentativa ${botData.reconnectAttempts} — reconectando em ${delay / 1000}s`);
+
+    botData.reconnectTimeout = setTimeout(() => {
+        botData.reconnectTimeout = null;
+        bots[index] = botData;
+        createBot(botId);
+    }, delay);
+
+    bots[index] = botData;
 }
 
 function createBot(botId) {
@@ -242,7 +271,6 @@ function createBot(botId) {
     
     botData.connecting = true;
     botData.status = 'connecting';
-    botData.reconnectAttempts = (botData.reconnectAttempts || 0) + 1;
     botData.resourcePackReady = false;
     bots[index] = botData;
     
@@ -268,7 +296,6 @@ function createBot(botId) {
     const bot = mineflayer.createBot(options);
     botData.bot = bot;
     
-    // Evento de resource pack - ACEITA IMEDIATAMENTE
     bot.on('resourcePack', (pack) => {
         console.log(`[${botData.nome}] 📦 Resource pack detectado! Aceitando...`);
         bot.acceptResourcePack();
@@ -281,12 +308,11 @@ function createBot(botId) {
         
         botData.connecting = false;
         botData.status = 'online';
-        botData.reconnectAttempts = 0;
+        botData.reconnectAttempts = 0; // Reset ao conectar com sucesso
         bots[index] = botData;
         
         io.emit('botStatus', { id: botId, status: 'online', nome: botData.nome });
         
-        // Se o resource pack já foi aceito, começa os comandos
         if (botData.resourcePackReady) {
             console.log(`[${botData.nome}] ✅ Resource pack pronto, iniciando comandos em 3s...`);
             setTimeout(() => {
@@ -297,7 +323,6 @@ function createBot(botId) {
                 }
             }, 3000);
         } else {
-            // Aguarda o resource pack chegar
             console.log(`[${botData.nome}] ⏳ Aguardando resource pack (max 15s)...`);
             let checkInterval = setInterval(() => {
                 if (botData.resourcePackReady) {
@@ -313,7 +338,6 @@ function createBot(botId) {
                 }
             }, 1000);
             
-            // Timeout de 15 segundos
             setTimeout(() => {
                 clearInterval(checkInterval);
                 if (!botData.resourcePackReady && botData.status === 'online') {
@@ -347,36 +371,19 @@ function createBot(botId) {
         
         io.emit('botStatus', { id: botId, status: 'offline', nome: botData.nome });
         
-        if (botData.running && (botData.reconnectAttempts || 0) < globalConfig.maxReconnectAttempts) {
-            const delay = 30000;
-            console.log(`[${botData.nome}] 🔄 Reconectando em ${delay/1000}s`);
-            
-            botData.reconnectTimeout = setTimeout(() => {
-                botData.reconnectTimeout = null;
-                bots[index] = botData;
-                createBot(botId);
-            }, delay);
-        }
+        scheduleReconnect(botId);
     });
     
     bot.on('kicked', (reason) => {
-        let kickReason = '';
-        if (typeof reason === 'string') kickReason = reason;
-        else if (reason?.text) kickReason = reason.text;
-        else kickReason = JSON.stringify(reason);
-        
-        console.log(`[${botData.nome}] 🚫 Kickado: ${kickReason.substring(0, 100)}`);
-        
-        botData.status = 'kicked';
-        botData.resourcePackReady = false;
-        bots[index] = botData;
-        io.emit('botStatus', { id: botId, status: 'kicked', nome: botData.nome });
-        
-        if (botData.running && (botData.reconnectAttempts || 0) < globalConfig.maxReconnectAttempts) {
-            setTimeout(() => {
-                createBot(botId);
-            }, 60000);
+        try {
+            const parsed = typeof reason === 'string' ? JSON.parse(reason) : reason;
+            const extra = parsed?.value?.extra?.value?.value;
+            const text = extra?.map(e => e?.text?.value || '').join('') || JSON.stringify(reason);
+            console.log(`[${botData.nome}] 🚫 KICK: ${text}`);
+        } catch(e) {
+            console.log(`[${botData.nome}] 🚫 KICK RAW:`, JSON.stringify(reason));
         }
+        // ...resto normal
     });
 }
 
@@ -477,6 +484,7 @@ app.post('/api/bot/:id/stop', (req, res) => {
     if (!bot) return res.status(404).json({ error: 'Bot não encontrado' });
     
     bot.running = false;
+    bot.reconnectAttempts = 0;
     destroyBot(bot.id);
     
     res.json({ success: true });
@@ -486,6 +494,7 @@ app.delete('/api/bot/:id', (req, res) => {
     const index = bots.findIndex(b => b.id === parseInt(req.params.id));
     if (index === -1) return res.status(404).json({ error: 'Bot não encontrado' });
     
+    bots[index].running = false;
     destroyBot(bots[index].id);
     bots.splice(index, 1);
     
@@ -581,6 +590,7 @@ app.post('/api/bots/stopAll', (req, res) => {
     
     runningBots.forEach(bot => {
         bot.running = false;
+        bot.reconnectAttempts = 0;
         destroyBot(bot.id);
     });
     
