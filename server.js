@@ -32,11 +32,11 @@ let globalConfig = {
 
 const PRECONFIGURED_BOTS = [
     {
-        nome: "Batatinha",
+        nome: "GatoDoMato_",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
-        senha: "10563210",
+        senha: "250719802023",
         autoSequence: true,
         commands: [
             "/login {senha}",
@@ -45,24 +45,24 @@ const PRECONFIGURED_BOTS = [
         ]
     },
     {
-        nome: "TutuDeFeijaum",
+        nome: "npx_DevCraft",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
-        senha: "10563210",
+        senha: "250719802023",
         autoSequence: true,
         commands: [
-            "/login 10563210",
+            "/login {senha}",
             "/skyblock",
             "/ac"
         ]
     },
     {
-        nome: "GrampeadorAzuç",
+        nome: "npm_install",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
-        senha: "10563210",
+        senha: "250719802023",
         autoSequence: true,
         commands: [
             "/login {senha}",
