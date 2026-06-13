@@ -33,7 +33,7 @@ let globalConfig = {
 
 const PRECONFIGURED_BOTS = [
     {
-        nome: "CocaCola",
+        nome: "Batatinha",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
@@ -46,11 +46,11 @@ const PRECONFIGURED_BOTS = [
         ]
     },
     {
-        nome: "PandaPesca",
+        nome: "TutuDeFeijaum",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
-        senha: "12081408",
+        senha: "10563210",
         autoSequence: true,
         commands: [
             "/login {senha}",
@@ -59,7 +59,7 @@ const PRECONFIGURED_BOTS = [
         ]
     },
     {
-        nome: "MineroPesca",
+        nome: "GrampeadorAzul",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
