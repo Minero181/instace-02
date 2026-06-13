@@ -33,7 +33,7 @@ let globalConfig = {
 
 const PRECONFIGURED_BOTS = [
     {
-        nome: "MineroPesca",
+        nome: "CocaCola",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
@@ -59,7 +59,7 @@ const PRECONFIGURED_BOTS = [
         ]
     },
     {
-        nome: "CocaCola",
+        nome: "MineroPesca",
         server: "healtzcraft.com",
         port: 25565,
         version: "1.21.4",
